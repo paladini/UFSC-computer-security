@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-class lcg:
+import sys
+import time
+
+class lcg(object):
 
     # Initializes everything
     # Values taken rom "Numerical Recipes"
-    def __init__(self, seed, m = 2**32, a = 1664525, c = 1013904223, size = None):
-        self.seed = seed
+    def __init__(self, seed = int(time.time()), m = 2**32, a = 1664525, c = 1013904223, size = None):
         self.a = a
         self.c = c
+        self.seed = seed
         self.size = size
         if self.size:
             self.m = 2**size
@@ -25,6 +28,15 @@ class lcg:
                 num = self.seed % self.m
         return num
 
+    # Generate random between interval
+    def randint(self, a, b):
+        self.seed = self.seed * self.a + self.c
+        num = self.seed % self.m
+        while (not (a <= num <= b)):
+            self.seed = self.seed * self.a + self.c
+            num = self.seed % self.m
+        return num
+
     # Change the seed
     def seed(self, new_seed):
         self.seed = new_seed
@@ -35,11 +47,10 @@ class lcg:
             self.size = new_size
             self.m = 2**new_size
 
+ 
+if (__name__ == "__main__"):
+    
+    bits = int(sys.argv[1])
 
-# class xorshift:
-
-#     def __init__(self):
-
-#     def rand(self):
-
-#     def srand(self, new_seed):
+    print("[LCG] Gerando número de {} bits...".format(bits))
+    print("[LCG] Número: {}".format(lcg(size=bits).rand()))
