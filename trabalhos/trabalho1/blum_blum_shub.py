@@ -54,30 +54,23 @@ class BlumBlumShub(object):
     
     def rand(self):
         """
-        Gera um número aleatório utilizando a fórmula para calcular a LCG, que é descrita pela relação
-        de recorrência expressa a seguir:
-
-            Xn+1 = (a * Xn + c) mod m
+        Gera um número aleatório utilizando o algoritmo BBS, que é descrito da seguinte forma:
+       
+            Xn+1 = (Xn)² mod M 
 
         Onde: 
-            m: o módulo (0 < m)
-            a: o multiplicador (0 < a < m)
-            c: o incremento (0 <= c < m)
-            X: sequência de valores pseudo-aleatórios.
-            X0: o "seed" ou valor de começo.
+            M: é o produto de dois números primos muito grandes (comumente denominados p e q), 
+               ambos congruentes a 3 (mod 4) e com mdc (máximo divisor comum) pequeno (fazendo
+               o tamanho do ciclo ser grande).
+            X0: o seed (X0) precisa ser um inteiro co-primo à M e não pode ser 1 ou 0.
             Xn+1: o próximo número a ser gerado.
-
-        Se uma instância dessa classe possuir o atributo "size" definido no momento da construção do objeto
-        ou definido posteriormente em uma chamada ao método seed(self, new_seed), então o número gerado de 
-        forma pseudo-aleatória possuirá "size" bits (ficará dentro de um loop enquanto não atingir essa 
-        quantidade de bits estipulada). Caso a instância não possua o atributo "size" definido, então o
-        número pseudo-aleatório gerado possuirá até 32 bits.
 
         Args:
             Este método não recebe nenhum argumento.
 
         Returns:
-            Um valor numérico pseudo-aleatório de "size" bits.
+            Um valor numérico pseudo-aleatório de "size" bits. No BBS a saída costuma ser o bit de paridade
+            ou um ou mais dos bits menos significantes (vide método bitstram(self)).
 
         """
         output_bits = ''
@@ -117,6 +110,13 @@ class BlumBlumShub(object):
             self.m = 2**new_size
     
     def bitstream(self):
+        """
+            Método auxiliar (e necessário) para o cálculo do número pseudo-aleatório utilizando o algoritmo BBS.
+
+            Returns:
+                Bit que vai compor um conjunto de bits pseudo-aleatórios que depois serão convertidos
+                para um valor numérico pseudo-aleatório.
+        """
         while (True):
             yield (sum(int(x) for x in bin(self.state)[2:]) % 2)
             self.state = pow(self.state, 2, self.m)

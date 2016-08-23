@@ -58,7 +58,7 @@ class lcg(object):
 
     def rand(self):
         """
-        Gera um número aleatório utilizando a fórmula para calcular a LCG, que é descrita pela relação
+        Gera um número aleatório utilizando o algoritmo LCG, que é descrito pela relação
         de recorrência expressa a seguir:
 
             Xn+1 = (a * Xn + c) mod m
