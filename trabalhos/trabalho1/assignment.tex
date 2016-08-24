@@ -1,0 +1,788 @@
+%%% Template originaly created by Karol Kozioł (mail@karol-koziol.net) and modified for ShareLaTeX use
+
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\renewcommand\familydefault{\sfdefault}
+\usepackage{tgheros}
+\usepackage[defaultmono]{droidmono}
+
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{geometry}
+\geometry{total={210mm,297mm},
+left=25mm,right=25mm,%
+bindingoffset=0mm, top=20mm,bottom=20mm}
+
+
+\linespread{1.3}
+
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+
+% custom theorems if needed
+\newtheoremstyle{mytheor}
+    {1ex}{1ex}{\normalfont}{0pt}{\scshape}{.}{1ex}
+    {{\thmname{#1 }}{\thmnumber{#2}}{\thmnote{ (#3)}}}
+
+\theoremstyle{mytheor}
+\newtheorem{defi}{Definition}
+
+% my own titles
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author \hfill \@date
+\vspace{4ex}
+\end{center}
+}
+\makeatother
+%%%
+
+% custom footers and headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Trabalho \textnumero{} 1}
+\cfoot{}
+\rfoot{Página \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+%
+
+% code listing settings
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    aboveskip={1.0\baselineskip},
+    belowskip={1.0\baselineskip},
+    columns=fixed,
+    breaklines=true,
+    tabsize=4,
+    prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+    frame=lines,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    keywordstyle=\color[rgb]{0.627,0.126,0.941},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{01,0,0},
+    numbers=left,
+    numberstyle=\small,
+    stepnumber=1,
+    numbersep=10pt,
+    captionpos=t,
+    inputencoding=utf8,
+    extendedchars=true,
+    escapeinside={\%*}{*)}
+}
+
+\usepackage{seqsplit}
+
+%%%----------%%%----------%%%----------%%%----------%%%
+
+\begin{document}
+
+\title{Trabalho Individual sobre Números Primos}
+
+\author{Fernando Paladini, Segurança em Computação (INE5429)}
+
+\date{23/08/2016}
+
+\maketitle
+
+\section*{Introdução}
+
+Devido à necessidade de geração de números aleatórias para diversas áreas da computação e à nossa incapacidade de gerar números verdadeiramente aleatórios em computadores determinísticos, criaram-se muitas técnicas algorítimicas para geração de números pseudo-aleatórios (PRNG - Pseudo-random number generator). Esses algoritmos evoluíram tanto ao longo do tempo que hoje podemos gerar números pseudo-aleatórios que tem uma qualidade muito similar aos números verdadeiramente aleatórios gerados com auxílio da entropia do meio. 
+
+Com a finalidade de conhecer e entender o funcionamento de alguns desses algoritmos, esse trabalho se faz presente. Para ele, a linguagem de programação Python foi escolhida devido ao seu grande poder de expressão, alta legibilidade, facilidade de uso e também ao fato interessante de trabalhar com números de precisão arbitrária, o que fornece muita flexibilidade ao programador.
+
+\section*{1) Gerar números pseudo-aleatórios}
+
+Os dois algoritmos escolhidos para geração de números pseudo-aleatórios foram: LCG (Linear Congruential Generator) e BBS (Blum Blum Shub). A escolha do \textbf{Linear Congruential Generator} se deu pelos seguintes motivos:
+
+\begin{itemize}
+    \item Usado em muitas bibliotecas e compiladores, tais como glibc, C99, C11, Turbo Pascal, Borland C/C++, Microsoft Visual Basic, etc.
+    \item Recomendado para sistemas embarcados.
+    \item Um dos algoritmos mais clássicos e mais conhecidos para PRNG.
+    \item Fácil compreensão.
+    \item Velocidade elevada e baixo consumo de memória.
+\end{itemize}
+
+\noindent A escolha do \textbf{Blum Blum Shub} se deu pelos seguintes motivos:
+
+\begin{itemize}
+    \item Existe uma prova (controversa) que prova sua segurança.
+    \item Fácil compreensão.
+    \item Implementação elegante.
+    \item Nome peculiar.
+\end{itemize}
+
+A complexidade do algoritmo LCG é extremamente baixa, pois não depende de nada além de um cálculo para obter uma resposta. Assim, podemos afirmar que a complexidade de LCG é O(1), mas há um agravante muito específico criado pelo fato de o número gerado possuir o número de bits desejado pessoa, o que faz com que a existência de um laço de repetição seja necessária. A complexidade do BBS também é variável de acordo com a quantidade de bits desejada, sendo, de maneira bem genérica, O(1). 
+\newline
+Abaixo é possível ver diversos números pseudo-aleatórios gerados pelo algoritmo LCG (Linear Congruential Generator): \newline
+\newline
+\noindent\textbf{40 bits:} \newline
+\noindent 1084561151355 (0m0.008s) \newline
+\noindent 654045254620 (0m0.012s) \newline
+\noindent 1080517984963 (0m0.009s) \newline
+\noindent 1058554509804 (0m0.020s) \newline
+
+\noindent\textbf{56 bits:} \newline
+\noindent 65037325448226801 (0m0.015s)\newline
+\noindent 54305578582889695 (0m0.012s) \newline
+\noindent 54324973087219070 (0m0.016s) \newline
+\noindent 54341596948072820 (0m0.013s) \newline
+
+\noindent\textbf{80 bits:} \newline
+\noindent 825478553948280999142574 (0m0.012s) \newline
+\noindent 823657620336969256720675 (0m0.010s) \newline
+\noindent 741754578878573068025056 (0m0.012s) \newline
+\noindent 883462854729154844725206 (0m0.008s) \newline
+
+\noindent\textbf{128 bits:} \newline
+\noindent 268853856020913286940901910622370278949 (0m0.008s) \newline
+\noindent 245119205298605232443540886800341667921 (0m0.020s) \newline
+
+\noindent\textbf{168 bits:} \newline
+\noindent 246618470779997295880953988703001426232298520142150 (0m0.028s) \newline
+\noindent 277140253240266825630062297621100181156036692087498 (0m0.016s) \newline
+
+\noindent\textbf{224 bits:} \newline
+\noindent \seqsplit{13755011397324812115354082314941958941498927444247465331799606790003} (0m0.008s) \newline
+\noindent \seqsplit{13731769903020160639743065215475186406147341550513132410782221346592} (0m0.012s) \newline
+
+\noindent\textbf{256 bits:} \newline
+\noindent \seqsplit{75934965606474312794107659343314611582390986107840384428494084559422279448656} (0m0.020s) \newline
+
+\noindent\textbf{512 bits:} \newline
+\noindent \seqsplit{6708081316904432149589009221475343374137366139605697590093702902702289181675254180018049296440144460803354073244657365732248731248019343976199148101119158} (0m0.008s) \newline
+
+\noindent\textbf{1024 bits:} \newline
+\noindent \seqsplit{148690264008881968026794314231976424199896112181962687308183381136345929650140492738312775187926904924317496261537961496895480972864348958226146326034521348166601890335138232711497221199946096457794080715483911075403030215713540966615194850539818356711739456949188316604005734400698093005416628858798924051303} (0m0.008s) \newline
+
+\noindent\textbf{2048 bits:} \newline
+\noindent \seqsplit{20761933335176962018661925159721784773668150332034900388175899345935649908462902159726809913801617848171367216061497065944516704917243728962464141730695270025699551291273023441000646372550692331906312761291141612001016750208750692441372185323615992393573325950294736159343116280858602193508629271300820598648717339134768425439366366439168985663308482721806873850387412693060148518078094166212575384157074971312847590450697477285057295888278893586398101090481632300278733543460637370170073952290507161396186258692719603465139618643810944188468529359022576518322778066853294098744094596756179440675217933541737886437964} (0m0.020s) \newline
+
+\noindent\textbf{4096 bits:} \newline
+\noindent \seqsplit{776647185118296213413096756744392839500869354984680883823622658951971806785745816228928508528527411232018258315750241157492500111795006673968838290129232506476863869841365438698892679312626636723254689403202717726925631041647396647769621614995737751757024938898625257422168241232368570365995318280469441447429307472422814812127233472134409864316325252179474439032779518292877797576492582090940140436587077449623348296569173416761371393524010115894053019278257021947235192855831905470454478382623263892897084774291646417659216747294859173516010777663254515916958511080467916223291768191717279835283122010724463391830294351658699420968473546183160288731991956493742652956894845451229399730865140001377381199298853197426089323262027436586461441909542753467603729934023888947574108930213983544572302360893761752045956400640423872448530095011206883943292499825699347080391997432376255518312620384726030391159496711260337358780337396434590784882341777061518805731894023418536570377569852637307036999625756242374014554186740925610002071391227917128938186234474890590016770884086948801410235003075260153936795544028263466222018721146918322249342498436981582585260081322888770286600121389056169082050643750980741760094212338419271992329688298} (0m0.012s) \newline
+
+\textcolor[RGB]{220,220,220}{\rule{\linewidth}{0.2pt}} \newline
+\newline
+\noindent Abaixo é possível ver diversos números pseudo-aleatórios gerados pelo algoritmo BBS (Blum Blum Shub): 
+\newline
+\newline
+\noindent\textbf{40 bits:} \newline
+\noindent 881150597781 (0m0.016s) \newline
+\noindent 695308320892 (0m0.020s) \newline
+\noindent 101137878464 (0m0.044s) \newline
+\noindent 777879788419 (0m0.020s) \newline
+
+\noindent\textbf{56 bits:} \newline
+\noindent 29170280903880792 (0m0.016s)\newline
+\noindent 58720041018058963 (0m0.020s) \newline
+\noindent 18850276677706401 (0m0.024s) \newline
+\noindent 1822408514450231 (0m0.016s) \newline
+
+\noindent\textbf{80 bits:} \newline
+\noindent 898823120399127663989487 (0m0.020s) \newline
+\noindent 767331397759652107947207 (0m0.024s) \newline
+\noindent 60959099700994804801500 (0m0.032s) \newline
+\noindent 434174257068244438676183 (0m0.028s) \newline
+
+\noindent\textbf{128 bits:} \newline
+\noindent 12002746307558928577133413317202998450 (0m0.064s) \newline
+\noindent 119841567296394090473295001181692520687 (0m0.044s) \newline
+
+\noindent\textbf{168 bits:} \newline
+\noindent 120090224487931614653387891896756808363453866142009 (0m0.060s) \newline
+\noindent 201176655275174844338948044499909035039311621705284 (0m0.080s) \newline
+
+\noindent\textbf{224 bits:} \newline
+\noindent \seqsplit{11195511721587131003114485058722927740020457087309531472989241399807} (0m0.100s) \newline
+\noindent \seqsplit{13625850567232881799057368302204199730304398036338223025712609887503} (0m0.148s) \newline
+
+\noindent\textbf{256 bits:} \newline
+\noindent \seqsplit{97757971878987503400941450006837324247693788830712525723281635255687359441896} (0m0.164s) \newline
+
+\noindent\textbf{512 bits:} \newline
+\noindent \seqsplit{8840719430278482930377450874549804902711357017967635042536649806348705825725760543528913321554392679365149623073103653144494242188563588027390944831772194} (0m2.632s) \newline
+
+\noindent\textbf{1024 bits:} \newline
+\noindent \seqsplit{119998270273247773446130448725542557927650494207820163528955492871080796960773522231016892974274996238781634908420437039680170123349655839923472254803781476788334970217141505982483219650112873950441423492132239660181470492411923776895696620968100315864596043215646719732419826052509847917569710490998329050580} (0m2.832s) \newline
+
+\noindent\textbf{2048 bits:} \newline
+\noindent \seqsplit{15056182553446899524897025287494589586933553825226438697300150707812690118211654438650169286488882708128062758031599283122093950328836676757610262237449287836006197720926860628062865137567786833083804123844414559056285908601157977061829059428408296333310683665827236361354198087936762309954077795631011660829299669798224916565655766801219375202521167461354034976289318192277191203732725999470244353970096217880653289926597888439908490721755084084546525954361426469607316449590719185438814568732932126851118761127944705810707183556399487552679926895574016761713073368362293787319969497892011469346135259004525875607271} (1m0.716s) \newline
+
+\noindent\textbf{4096 bits:} \newline
+\noindent \seqsplit{120706482600531430281544604043255155727538035499608110334016071703036849000182945079041311682902821565389967496054083464445929709102033065229948163899481663199907528030148742420419607122707107238908349512684302664805319108495551768702736014045823546289857316868029457718236877838733695522545817293468390811336987439038303097571010426081893688009722057193154677514845331395240530872769806430127798267851814511414567371611559232711837446280865202322460815655170268818881636280236797680640484043272539499305716776573122013714369940042940551734000305771150940698341300339329682746460231902960773719746809751470063831612759185090184341504564686197934649810620302650737690070714263075153740006853164879480768594389007806327119378073665179993819251567226516295908331135639753626791460923863286836506980758512795504538821157582638299354889515876852220389723641810731682066462228274554858744291919173193793028424015372133379095687821145269235634118039780473954710287804653541683780562339673240698508674843112437205629663789363641548909733275603588053651586846846699079647205925842133077060043073966368798189805893267323678070571502681374505363547409668191784595546943731419260947408222313474371059055317620904963430413621481360206627847666620} (16m32.380s) \newline
+
+\textcolor[RGB]{220,220,220}{\rule{\linewidth}{0.2pt}} \newline
+\newline
+
+\noindent A implementação dos algoritmos escolhidos (LCG e BBS) devidamente comentada pode ser encontrada logo abaixo. Observação: não foi possível renderizar os caracteres do código/documentação em UTF-8, por isso eles foram substituídos por caracteres sem acentos e similares.
+
+\begin{lstlisting}[label={list:first},caption=Implementação do algoritmo LCG - Arquivo lcg.py.]
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import sys
+import time
+
+"""
+
+Esta classe gera numeros pseudo-aleatorios utilizando o algoritmo LCG (Linear Congruential Generator).
+Para chamar esta classe a partir da linha de comando basta digitar:
+    
+    $ python lcg.py <qtd_de_bits>
+
+Onde "<qtd_de_bits>" eh a quantidade de bits que o numero gerado deve possuir. Exemplo:
+
+    $ python lcg.py 32
+    [LCG] Gerando numero de 32 bits...
+    [LCG] Número: 4174021489
+
+Referencias:
+    https://en.wikipedia.org/wiki/Linear_congruential_generator
+    https://en.wikipedia.org/wiki/Combined_Linear_Congruential_Generator
+    http://www.eternallyconfuzzled.com/tuts/algorithms/jsw_tut_rand.aspx
+    https://rosettacode.org/wiki/Linear_congruential_generator
+
+"""
+class lcg(object):
+
+    def __init__(self, seed = int(time.time()), m = 2**32, a = 1664525, c = 1013904223, size = None):
+        """
+            O construtor da classe do gerador de numeros pseudo-aleatorios eh altamente customizavel e
+            recebe alguns parametros com valores padrão baseados no livro "Numerical Recipes: The Art 
+            of Scientific Computing" (Press, WH; Teukolsky, SA; Vetterling, WT; Flannery, BP).
+
+            Por padrao vai gerar um número de até 32 bits, mas caso um "size" seja fornecido, vai gerar
+            somente numeros com "size" bits.
+
+            Args:
+                seed: valor de semente para iniciar o gerador de números pseudo-aleatorios. Se nao 
+                      informado, utiliza o Unix Timestamp (Epoch) de acordo com as informacoes do sistema.
+                m: o modulo, cujo valor padrao eh 2^32 / 4294967296.
+                a: o multiplicador, cujo valor padrao eh 1664525.
+                c: o incremento, cujo valor eh 1013904223.
+                size: o tamanho em bits do número a ser gerado, cujo valor padrao eh None (na pratica eh 32).
+
+            Returns:
+                Esse metodo não retorna nada.
+                
+        """
+        self.a = a
+        self.c = c
+        self.seed = seed
+        self.size = size
+        if self.size:
+            self.m = 2**size
+        else:
+            self.m = m
+
+    def rand(self):
+        """
+        Gera um numero aleatorio utilizando o algoritmo LCG, que eh descrito pela relacao
+        de recorrencia expressa a seguir:
+
+            Xn+1 = (a * Xn + c) mod m
+
+        Onde: 
+            m: o modulo (0 < m)
+            a: o multiplicador (0 < a < m)
+            c: o incremento (0 <= c < m)
+            X: sequencia de valores pseudo-aleatorios.
+            X0: o "seed" ou valor de comeco.
+            Xn+1: o proximo numero a ser gerado.
+
+        Se uma instancia dessa classe possuir o atributo "size" definido no momento da construcao do objeto
+        ou definido posteriormente em uma chamada ao metodo seed(self, new_seed), entao o numero gerado de 
+        forma pseudo-aleatoria possuira "size" bits (ficara dentro de um loop enquanto nao atingir essa 
+        quantidade de bits estipulada). Caso a instancia não possua o atributo "size" definido, entao o
+        numero pseudo-aleatorio gerado possuira ate 32 bits.
+
+        Args:
+            Este metodo nao recebe nenhum argumento.
+
+        Returns:
+            Um valor numerico pseudo-aleatorio de "size" bits.
+
+        """
+        self.seed = self.seed * self.a + self.c
+        num = self.seed % self.m
+        if self.size:
+            while (num.bit_length() < self.size):
+                self.seed = self.seed * self.a + self.c
+                num = self.seed % self.m
+        return num
+
+    def randint(self, a, b):
+        """
+        Gera um numero aleatorio que esta entre os intervalos "a" e "b". 
+
+        O numero a ser gerado, denominado "num", sera maior ou igual a "a" e menor ou igual
+        a "b". Em outras palavras, a <= num <= b.
+
+        Args:
+            a: valor numerico de limite inferior para o numero a ser gerado.
+            b: valor numerico de limite superior para o numero a ser gerado.
+
+        Returns:
+            Um valor numerico pseudo-aleatorio que esta entre os valores a e b.
+
+        """
+        self.seed = self.seed * self.a + self.c
+        num = self.seed % self.m
+        while (not (a <= num <= b)):
+            self.seed = self.seed * self.a + self.c
+            num = self.seed % self.m
+        return num
+
+    def seed(self, new_seed):
+        """
+        Metodo para mudar o valor do seed para algum valor desejado.
+
+        Args:
+            new_seed: um valor numerico para indicar o novo valor de seed.
+
+        Returns:
+            Esse metodo nao retorna nada.
+
+        """
+        self.seed = new_seed
+
+    def size(self, new_size):
+        """
+        Metodo para mudar a quantidade de bits que o numero gerado tera.
+
+        Args:
+            new_size: um valor numerico para indicar a nova quantidade de bits do numero gerado.
+
+        Returns:
+            Esse metodo nao retorna nada.
+
+        """
+        if self.size != new_size:
+            self.size = new_size
+            self.m = 2**new_size
+
+ 
+if (__name__ == "__main__"):
+    
+    bits = int(sys.argv[1])
+
+    print("[LCG] Gerando numero de {} bits...".format(bits))
+    print("[LCG] Numero: {}".format(lcg(size=bits).rand()))
+\end{lstlisting}
+
+\begin{lstlisting}[label={list:second},caption=Implementação do algoritmo BBS - Arquivo blum\_blum\_shub.py.]
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import sys
+import time
+from lcg import lcg
+from primality import MillerRabin 
+
+"""
+
+Esta classe gera numeros pseudo-aleatorios utilizando o algoritmo BBS (Blum Blum Shub).
+Para chamar esta classe a partir da linha de comando basta digitar:
+    
+    $ python blum_blum_shub.py <qtd_de_bits>
+
+Onde "<qtd_de_bits>" eh a quantidade de bits que o numero gerado deve possuir. Exemplo:
+
+    $ python blum_blum_shub.py 32
+    [Blum Blum Shub] Gerando número de 32 bits...
+    [Blum Blum Shub] Número: 3234751506
+
+Referencias:
+    https://en.wikipedia.org/wiki/Blum_Blum_Shub
+    https://pt.wikipedia.org/wiki/Blum_Blum_Shub
+    https://crypto.stackexchange.com/questions/3454/blum-blum-shub-vs-aes-ctr-or-other-csprngs
+    https://jeremykun.com/2016/07/11/the-blum-blum-shub-pseudorandom-generator/
+    http://cs.ucsb.edu/~koc/cren/project/pp/gawande-mundle.pdf
+
+"""
+class BlumBlumShub(object):
+
+    def __init__(self, seed = None, size = None):
+        """
+        Construtor da classe do gerador de numeros pseudo-aleatorios.
+
+        Por padrao vai gerar um numero pseudo-aleatorio de ate 32 bits, mas caso um "size" seja fornecido, 
+        vai gerar somente numeros com "size" bits.
+
+        Args:
+            seed: valor de semente para iniciar o gerador de números pseudo-aleatorios. Se nao 
+                  informado, utiliza um valor numerico pseudo-aleatorio entre 2 e (m - 1).
+            size: o tamanho em bits do numero a ser gerado, cujo valor padrao eh None (na pratica eh 32).
+
+        Returns:
+            Esse metodo nao retorna nada.
+                
+        """
+        self.size = size
+        self.m = MillerRabin.encontrar_primo(self.size) * MillerRabin.encontrar_primo(self.size)
+        if (seed):
+            self.state = seed % self.m
+        else:
+            self.state = lcg(size=self.size).randint(2, self.m - 1) % self.m
+    
+    def rand(self):
+        """
+        Gera um núumero aleatorio utilizando o algoritmo BBS, que eh descrito da seguinte forma:
+       
+            Xn+1 = (Xn)² mod M 
+
+        Onde: 
+            M: eh o produto de dois numeros primos muito grandes (comumente denominados p e q), 
+               ambos congruentes a 3 (mod 4) e com mdc (maximo divisor comum) pequeno (fazendo
+               o tamanho do ciclo ser grande).
+            X0: o seed (X0) precisa ser um inteiro co-primo a M e nao pode ser 1 ou 0.
+            Xn+1: o proximo número a ser gerado.
+
+        Args:
+            Este metodo não recebe nenhum argumento.
+
+        Returns:
+            Um valor numerico pseudo-aleatorio de "size" bits. No BBS a saida costuma ser o bit de paridade
+            ou um ou mais dos bits menos significantes (vide metodo bitstram(self)).
+
+        """
+        output_bits = ''
+        for bit in self.bitstream():
+            output_bits += str(bit)
+            if (len(output_bits) == self.size):
+                break
+ 
+        return int(output_bits, 2)
+
+    def seed(self, new_seed):
+        """
+        Metodo para mudar o valor do seed para algum valor desejado.
+
+        Args:
+            new_seed: um valor numerico para indicar o novo valor de seed.
+
+        Returns:
+            Esse metodo não retorna nada.
+
+        """
+        self.state = new_seed
+
+    def size(self, new_size):
+        """
+        Meodo para mudar a quantidade de bits que o numero gerado tera.
+
+        Args:
+            new_size: um valor numerico para indicar a nova quantidade de bits do numero gerado.
+
+        Returns:
+            Esse metodo nao retorna nada.
+
+        """
+        if self.size != new_size:
+            self.size = new_size
+            self.m = 2**new_size
+    
+    def bitstream(self):
+        """
+            Metodo auxiliar (e necessario) para o calculo do número pseudo-aleatorio utilizando o algoritmo BBS.
+
+            Returns:
+                Bit que vai compor um conjunto de bits pseudo-aleatorios que depois serao convertidos
+                para um valor numerico pseudo-aleatorio.
+        """
+        while (True):
+            yield (sum(int(x) for x in bin(self.state)[2:]) % 2)
+            self.state = pow(self.state, 2, self.m)
+
+if (__name__ == "__main__"):
+    
+    bits = int(sys.argv[1])
+
+    print("[Blum Blum Shub] Gerando numero de {} bits...".format(bits))
+    print("[Blum Blum Shub] Numero: {}".format(BlumBlumShub(size=bits).rand()))
+
+\end{lstlisting}
+
+\section*{2) Verificação de primalidade}
+
+Os números primos são essenciais para muitas aplicações da computação, com a mais conhecida sendo a criptografia, em particular a criptografia assimétrica. Chaves RSA são geradas a partir de números primos com uma grande quantidade de bits, de forma que sejam suficientemente seguras - se tratando de segurança, isso significa que precisam ser praticamente inquebráveis. Para que isso seja possível, testes simples e eficientes devem existir para determinar a primalidade de números. Entre os testes probabilísticos mais conhecidos estão o teste de primalidade de Fermat e  o teste de Miller-Rabin. Devido à grande importância do teste de Fermat para iniciar os estudos na área de primalidade (e também devido a base fornecida para o teste de Miller-Rabin), resolvi escolher ele para tratar aqui. \newline
+
+\newline O teste de primalidade de Fermat, também conhecido como o "Pequeno Teorema de Fermat", afirma que se $p$ é primo, $0$ < $a$ < $p$, então: \begin{equation}
+    a^{p-1} \equiv 1 \pmod{p}
+\end{equation}
+
+Para testar se $p$ é primo, basta escolher inteiros $a$ aleatórios no intervalo possível e verificar se a congruência (expressa acima) é válida. Se isso for verdade pra muitos valores, então $p$ é muito possivelmente um primo. Entretanto, se um inteiro $a$ gera uma incongruência da forma
+\begin{equation}
+    a^{p-1} \not\equiv 1 \pmod{p}    
+\end{equation}
+, então podemos dizer que é $a$ é uma testemunha de que $p$ é composto - e portanto não é primo. \newline
+
+\noindent Embora a complexidade do teste de Miller-Rabin seja maior do que do teste de primalidade de Fermat (portanto, possui um tempo de execução maior), ele possui maior precisão independente do número testado, de forma que acaba garantindo com um nível maior de segurança que um número é primo ou composto. \newline
+
+\newline
+\noindent Abaixo é possível ver diversos números primos gerados através do algoritmo de LCG e verificados pelo teste de primalidade de Fermat e teste de Miller-Rabin: 
+\newline
+\newline
+\noindent\textbf{40 bits:} \newline
+\noindent Fermat: 951159012547 (0m0.008s) \newline
+\noindent Miller-Rabin: 813765973871 (0m0.012s) \newline
+
+\noindent\textbf{56 bits:} \newline
+\noindent Fermat: 56914756873663081 (0m0.004s)\newline
+\noindent Miller-Rabin: 56753366274499183 (0m0.024s)\newline
+
+\noindent\textbf{80 bits:} \newline
+\noindent Fermat: 929945705236430685794213 (0m0.012s) \newline
+\noindent Miller-Rabin: 721584187574854472469109 (0m0.012s) \newline
+
+\noindent\textbf{128 bits:} \newline
+\noindent Fermat: 251144094554926686005408286496966864861 (0m0.020s) \newline
+\noindent Miller-Rabin: 310221192693605632789209171515817452831 (0m0.036s) \newline
+
+\noindent\textbf{168 bits:} \newline
+\noindent Fermat: 349050850241449722612777471186888866498433331556159 (0m0.024s) \newline
+\noindent Miller-Rabin: 330574843746154037512847946249138708551260727604581 (0m0.032s) \newline
+
+\noindent\textbf{224 bits:} \newline
+\noindent Fermat: \seqsplit{24701610941290092073600617507245648431874818097677454260412190079909} (0m0.036s) \newline
+\noindent Miller-Rabin: \seqsplit{14153390404157063757074459155639274956920509831336006649808899854069} (0m0.092s) \newline
+
+\noindent\textbf{256 bits:} \newline
+\noindent Fermat: \seqsplit{84964404920695066550843686826242302196461987267359795997121490855550025244891} (0m0.040s) \newline
+\noindent Miller-Rabin: \seqsplit{79002347477254432875004663726867878842094910019625162980570065394251951770463} (0m0.080s) \newline
+
+\noindent\textbf{512 bits:} \newline
+\noindent Fermat: \seqsplit{10131263616509523625060073074246444764046573901172781269763220891713314620731000825583906603624322187950109115066932465142747290803506079500821445707485127} (0m0.820s) \newline
+\noindent Miller-Rabin: \seqsplit{7905169878793783909650203432394315907350789433027787062559725640174118695460877812729332805671293166301196789805360780644014844880736685518570879839799773} (0m0.892s) \newline
+
+\noindent\textbf{1024 bits:} \newline
+\noindent Fermat: \seqsplit{145705102039952137418475509314546364205101802258842912632043631197757443223217931618143386179881147902812502187004137952225214403992109750444145857588554486059685575566978006219428522471607641661426188275627255455626295676067440108431777390742137180421631506271170715986707249831468443712285645717067352039269} (0m1.192s) \newline
+\noindent Miller-Rabin: \seqsplit{153203101678922435973792299558747852522965891157025105191264941926310598044277342287968814352436198623535696078822904876826364789958221829656625510785685305180700799552606876279669908115331545874647708231733832302475412744252216927406928221056623611299201310211367575164379562291293045482394238774509212512431} (0m2.780s) \newline
+
+\noindent\textbf{2048 bits:} \newline
+\noindent Fermat: \seqsplit{22938966653774785416754486611272032381511122765045352327253061776694001762793835777876105880323163733280461323575188699600540824242639941507484167068162921997812607061335178463406801896282950761332095588078303255269139549873938484569156476205250620648142895897423703521355109896207812475300366054760813063580638398062029345556633489349922647306748309637175016723811998151702095423802642753452354237575281706266550533321561013303856091406434428632537018568223716907330920291587084836207800047840770203450769454798244954529983789859684769634622300033899229981441481483751849185263586554055488572641435747321172351664737} (0m33.384s) \newline
+\noindent Miller-Rabin: \seqsplit{20284410440733597505836134517744494592748921392227084888355694426593706895306799866751471778523475573632853526505644244521279608377088227492969699793373121374816436760443643478092552322679081735076496388189919862611685226391230976410822702023023634251824647715268906605354689376387986942646048516083122415688826811234103618953741453802750949396108413856378664166420252310028603610617778226620410743614758195421928317274394297274547023025699503361502747385979256180051289356791342414877016440258756335259525400208886709908809958478188126501107971413084041303321948946158806736777577505665678564056312622473620637868789} (4m55.212s) \newline
+
+\noindent\textbf{4096 bits:} \newline
+\noindent Fermat: \seqsplit{990373981888179150196191002628260698021481663023749469235981163675469924459976186653050960512630088894931351040759925639349497430448313081234561151284017664075584072483175868794486625967997174898666032587792977742612960190227978674520591183257249775859963538634471876454384226909648799026628533720842249193608586794885760430947703783571330329763790290493024114131341421184323475715145087833021064874919740898793724992235274853305850361041205688135160553735109778164697323791105055913615744975378132150586785117483673588381375528014102591667116789314159715370574880103652261922142373492484494451388672140788813888452853023141329171034950090839435701035047762485664517319114993259062731206817744499017701455091327886803852932216802426450614255880688144754169847088278468663640363598143451903333849814394678176303298938121748047184487916320373844591308958360411382045476715217102637730930527340067455202227019614412564869642330701745645458639128544905588559952352976599167016142100646286621473342158286464820431398183087016910101992739584521360856869289183752876770028223682285290134771432160823501630471962125912840741436112888690811079247693767891916902844079928026252758572727339263299335444024502175923337166565068942250178118606491} (0m25.808s) \newline
+\noindent Miller-Rabin: \seqsplit{824525771203919625462696238325561433859353827163869883889045758592835510064641864276559949905362113663318565381331152228106258587772969817255630332379616272370597940882254940763430181833538368947541476519550505571584661060862710184507078843104239079516020043923463149421215390435396644895240009698561557884812971399150826857088634611505063569032309638344894939862038207703884955025015864581942649872493222732910991842151963383248122542994937639138440135013295584846774224102917059539916601232409777647817461432819254050356455848635286870990448443023529372038013314610802827538297215649174954515958110596462663617715851410257109539992632134693463015351167796802894181934063222022186453133373498213065232630053699674094842418000018401802306154363608644111295395332885636077847360728302230989380996442627555315979220765021096481694175738075459011133297541665888591777816224736486229235298005384027404827474486457867443786915084334096031117636605159830096124942206594059592119665284051457982587460599807387347954713794093730347990975253821035706232172311605779732933119118115054609928933406524184413069392910862375161012365149042034914450689722372451532667732247303976619311011682669185519200429473908288138470183405772892010973829778961} (2m52.932s) \newline
+
+\textcolor[RGB]{220,220,220}{\rule{\linewidth}{0.2pt}} \newline
+\newline
+
+\noindent É notável a diferença de tempo de execução entre os testes de primalidade de Fermat e Miller-Rabin, de forma que tive bastante dificuldade para gerar números primos com este último. Ainda assim, o gerador de número pseudo-aleatórios utilizado foi o LCG, que é extremamente mais rápido do que o BBS. Realizei alguns testes e pude notar que é praticamente inviável a geração de números primos no meu computador utilizando o teste de Miller-Rabin com a geração de números pseudo-aleatórios através de BBS (Blum Blum Shub). \newline
+\newline
+\noindent A implementação dos verificadores de primalidade devidamente comentados podem ser encontrados logo abaixo. Observação: não foi possível renderizar os caracteres do código/documentação em UTF-8, por isso eles foram substituídos por caracteres sem acentos e similares.
+
+\begin{lstlisting}[label={list:3},caption=Implementação dos algoritmos de teste de primalidade de Fermat e Miller-Rabin - Arquivo primality.py]
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import sys
+import time
+from lcg import lcg
+
+"""
+
+As classes deste arquivo verificam se os numeros fornecidos sao primos e geram numeros primos de tamanho variavel de bits de forma pseudo-aleatoria.
+
+Para executar esse arquivo a partir da linha de comando basta digitar:
+    
+    $ python primality.py <qtd_de_bits>
+
+Onde "<qtd_de_bits>" eh a quantidade de bits que o numero gerado deve possuir. Exemplo:
+
+    $ python primality.py 128
+    [MillerRabin] Procurando primo...
+    [MillerRabin] 304159568226184448912103696911866306307 eh primo!
+    [Fermat] Procurando primo...
+    [Fermat] 301970148924118150955226359108149582211 eh primo!
+
+Referencias:
+    https://en.wikipedia.org/wiki/Fermat%27s_little_theorem
+    https://en.wikipedia.org/wiki/Pseudoprime
+    https://pt.wikipedia.org/wiki/Teste_de_primalidade_de_Miller-Rabin
+    https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+    https://pt.wikipedia.org/wiki/Teste_de_primalidade_de_Fermat
+    https://jeremykun.com/2013/06/16/miller-rabin-primality-test/
+    http://mathworld.wolfram.com/Rabin-MillerStrongPseudoprimeTest.html
+    https://www.youtube.com/watch?v=qfgYfyyBRcY
+
+"""
+class MillerRabin(object):
+
+    @staticmethod
+    def verificar_testemunha(possivel_testemunha, p, exp, resto):
+        """
+        Verifica se a possivel testemunha de que um numero não eh primo eh
+        realmente testemunha. Se for, significa que o numero que esta 
+        sendo testado tem uma testemunha da sua nao primalidade, de forma
+        que a hipotese de que o numero testado eh primo pode ser descartada.
+
+        Args:
+            possivel_testemunha: a possivel testemunha de que "p" nao eh primo.
+                                 Sera testemunha caso a^d ≢ 1 (mod n) e 
+                                 a^((2^r)d) ≢ -1 (mod n) para todo 0 <= r <= s - 1.
+            p: o numero para o qual a primalidade esta sendo testada.
+            exp, resto: numeros inteiros, onde 'resto' eh um numero impar.
+
+        Returns:
+            True se a possivel testemunha for uma testemunha de que "p" nao eh primo.
+            False se a possivel testemunha nao for uma testemunha de verdade.
+
+        """
+        possivel_testemunha = pow(possivel_testemunha, resto, p)
+        if ((possivel_testemunha == 1) or (possivel_testemunha == p - 1)):
+            return False
+
+        for _ in range(exp):
+            possivel_testemunha = pow(possivel_testemunha, 2, p)
+            if (possivel_testemunha == (p - 1)):
+                return False
+
+        return True
+    
+    @staticmethod
+    def verificar_primalidade(p, certeza=100):
+        """
+        O teste de Miller-Rabin eh um importantíssimo teste probabilistico da primitividade de um número dado.
+        Se um numero passa nesse teste significa que ele tem uma probabilidade >= 75% de ser um numero primo,
+        mas ate este numero ser provado como sendo um numero primo ele eh considerado apenas um "pseudoprimo".
+
+        Ao aplicar o mesmo teste varias vezes, a margem de erro pode ser diminuida aleatoriamente, de forma
+        que a margem de erro final seja consideravelmente baixa. Ele eh baseado no "Pequeno Teorema de Fermat",
+        que consiste do "Teste de primalidade de Fermat".
+
+        Args:
+            p: o numero a ser testado.
+            certeza: o grau de "certeza" de que este número seja de fato um número primo. Valor padrao eh 100, o que significa que o teste sera aplicado 100 vezes.
+
+        Returns:
+            True se o numero eh um (pseudo-)primo.
+            False se o numero não eh primo.
+
+        """
+        if (p == 2 or p == 3): 
+            return True
+        elif (p < 2): 
+            return False
+
+        resto = p - 1
+        exp = 0
+        while (resto % 2 == 0):
+            resto = resto/2
+            exp += 1
+
+        for _ in range(certeza):
+            possivel_testemunha = lcg().randint(2, p - 2)
+            if (MillerRabin.verificar_testemunha(possivel_testemunha, p, exp, resto)):
+                return False
+
+        return True
+
+    @staticmethod
+    def encontrar_primo(bits=None):
+        """
+        Encontra um numero primo que possui 'bits' bits utilizando uma busca com numeros gerados de forma pseudo-aleatoria. 
+
+        Args:
+            bits: quantidade de bits que o numero primo deve possuir. Se nenhum valor for informado, sera usado 32 bits.
+        
+        Returns:
+            Um valor numerico com 'bits' bits e que eh primo.
+
+        """
+        bits = bits or 32
+        random = lcg(size=bits)
+
+        while (True):
+            primo = random.rand()
+            if (MillerRabin.verificar_primalidade(primo)):
+                return primo
+
+class FermatPrimality(object):
+
+    @staticmethod
+    def verificar_primalidade(p):
+        """
+        Verifica se o numero dado 'p' eh um numero primo atraves do método de Fermat, tambem conhecido 
+        como "Teste de Primalidade de Fermat". Este eh um dos metodos mais simples para verificar se um 
+        numero eh primo ou nao (e provavelmente um dos mais elegantes tambem). Neste metodo a composicao
+        do numero dado eh verificada e os numeros que falham no teste nao sao primos.
+
+        Esta implementação nao leva em consideracao os numeros de Carmichael, que sao infinitos e
+        passam pelo teste, mas não sao primos. Portanto, a partir deste teste podemos obter apenas
+        numeros que sao considerados "pseudoprimos".
+
+        Args:
+            p: o numero que sera testado a primalidade.
+
+        Returns:
+            True significa que o numero eh pseudoprimo, ou seja, provavelmente eh primo (existem falso-positivos).
+            False significa que o numero eh composto, ou seja, nao eh primo.
+
+        """
+        if (p == 2):
+            return True
+        if (not p & 1):
+            return False
+
+        if (pow(2, p-1, p) == 1):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def encontrar_primo(bits=None):
+        """
+        Encontra um numero primo que possui 'bits' bits utilizando uma busca com numeros gerados de forma pseudo-aleatoria. 
+
+        Args:
+            bits: quantidade de bits que o numero primo deve possuir. Se nenhum valor for informado, sera usado 32 bits.
+        
+        Returns:
+            Um valor numerico com 'bits' bits e que eh primo.
+
+        """
+        bits = bits or 32
+        random = lcg(size=bits)
+
+        while (True):
+            primo = random.rand()
+            if (FermatPrimality.verificar_primalidade(primo)):
+                return primo
+
+if (__name__ == "__main__"):
+
+    bits = int(sys.argv[1])
+
+    print("[MillerRabin] Procurando primo...")
+    print("[MillerRabin] {} eh primo!".format(MillerRabin.encontrar_primo(bits)))
+
+    time.sleep(2)
+    
+    print("[Fermat] Procurando primo...")
+    print("[Fermat] {} eh primo!".format(FermatPrimality.encontrar_primo(bits)))
+
+\end{lstlisting}
+
+\end{document}
