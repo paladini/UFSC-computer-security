@@ -1,0 +1,378 @@
+%%% Template originaly created by Karol Kozioł (mail@karol-koziol.net) and modified for ShareLaTeX use
+
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\renewcommand\familydefault{\sfdefault}
+\usepackage{tgheros}
+\usepackage[defaultmono]{droidmono}
+
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{geometry}
+\geometry{total={210mm,297mm},
+left=25mm,right=25mm,%
+bindingoffset=0mm, top=20mm,bottom=20mm}
+
+
+\linespread{1.3}
+
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+
+% custom theorems if needed
+\newtheoremstyle{mytheor}
+    {1ex}{1ex}{\normalfont}{0pt}{\scshape}{.}{1ex}
+    {{\thmname{#1 }}{\thmnumber{#2}}{\thmnote{ (#3)}}}
+
+\theoremstyle{mytheor}
+\newtheorem{defi}{Definition}
+
+% my own titles
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author \hfill \@date
+\vspace{4ex}
+\end{center}
+}
+\makeatother
+%%%
+
+% custom footers and headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{Trabalho \textnumero{} 1}
+\cfoot{}
+\rfoot{Página \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+%
+
+% code listing settings
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    aboveskip={1.0\baselineskip},
+    belowskip={1.0\baselineskip},
+    columns=fixed,
+    breaklines=true,
+    tabsize=4,
+    prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+    frame=lines,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    keywordstyle=\color[rgb]{0.627,0.126,0.941},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{01,0,0},
+    numbers=left,
+    numberstyle=\small,
+    stepnumber=1,
+    numbersep=10pt,
+    captionpos=t,
+    inputencoding=utf8,
+    extendedchars=true,
+    escapeinside={\%*}{*)}
+}
+
+\usepackage{seqsplit}
+
+%%%----------%%%----------%%%----------%%%----------%%%
+
+\begin{document}
+
+\title{Trabalho Individual sobre o GPG}
+
+\author{Fernando Paladini, Segurança em Computação (INE5429)}
+
+\date{13/09/2016}
+
+\maketitle
+
+\section*{1) Certificado de Revogação}
+
+As chaves criptográficas podem ser revogadas a qualquer momento, desde que o usuário que a criou tenha acesso à chave privada e também a senha utilizada nessa chave privada. A revogação de chaves criptográficas é extremamente importante para casos onde o usuário:
+
+\begin{itemize}
+    \item Tenha sua chave privada comprometida (outras pessoas estejam usando ela);
+    \item Tenha gerado uma nova chave e não queira mais usar a antiga.
+\end{itemize}
+
+Entretanto, às vezes o usuário pode não ter mais acesso à sua chave privada. Foi com o objetivo de fornecer uma segunda camada de proteção para esses casos que os certificados de revogação foram criados. Os "certificados de revogação" permitem revogar uma chave criptográfica mesmo que o usuário não tenha mais acesso à chave privada, de forma que devem ser armazenadas com muito cuidado e geradas quando o usuário ainda tem acesso à chave privada.
+
+Para o experimento de revogação da chave com um certificado, os seguintes comandos foram executados:
+
+\begin{lstlisting}[label={list:first},caption=Teste de revogação de chaves criptográficas com certificado de revogação.]
+
+# Geracao da chave criptografica de teste
+$ gpg --gen-key
+
+# Gerando certificado de revogacao
+$ gpg --list-keys
+pub   1024R/8316C680 2016-09-13
+uid   Paladini (revocation certificate test) <fernandopalad@gmail.com>
+sub   1024R/D6F0C35C 2016-09-13
+
+$ gpg --output revoke.asc --gen-revoke 8316C680
+
+# Enviando chave criptografica para o servidor de chaves do RNP
+$ gpg --keyserver keyserver.cais.rnp.br --send-keys 8316C680
+
+# Importando certificado de revogacao
+$ gpg --import revoke.asc
+$ gpg --list-keys
+pub   1024R/8316C680 2016-09-13 [revoked: 2016-09-13]
+uid   Paladini (revocation certificate test) <fernandopalad@gmail.com>
+
+# Enviando chave revogada para o servidor de chaves do RNP
+$ gpg --keyserver keyserver.cais.rnp.br --send-keys 8316C680
+\end{lstlisting}
+
+Durante o processo foi verificado, através da interface web do servidor de chaves do RNP, se os comandos executados estavam causando os efeitos desejados. Por fim, foi possível revogar a chave criptográfica sem maiores problemas. A mesma pode ser visualizada em: https://memoria.rnp.br/keyserver/pks/lookup?search=0x8316C680&op=index
+
+\section*{2) Revogação de Assinaturas}
+
+\begin{lstlisting}
+# Atualizando as chaves locais a partir do servidor de chaves do RNP
+$ gpg --refresh-keys --keyserver keyserver.cais.rnp.br
+
+# Obtendo uma chave criptográfica de um colega
+$ gpg --keyserver keyserver.cais.rnp.br --recv-key 85F12A95
+gpg: requesting key 85F12A95 from hkp server keyserver.cais.rnp.br
+gpg: key 85F12A95: public key "Bernardo Engelke (Aluno INE) <bernardo.engelke@grad.ufsc.br>" imported
+gpg: public key of ultimately trusted key A5313440 not found
+gpg: public key of ultimately trusted key 2FC2490F not found
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   5  signed:  11  trust: 0-, 0q, 0n, 0m, 0f, 5u
+gpg: depth: 1  valid:  11  signed:   1  trust: 11-, 0q, 0n, 0m, 0f, 0u
+gpg: next trustdb check due at 2017-09-06
+gpg: Total number processed: 1
+gpg:               imported: 1  (RSA: 1)
+
+# Assinando a chave criptográfica desse colega e enviando ao RNP
+$ gpg --default-key 622D0665 --sign-key 85F12A95
+$ gpg --keyserver keyserver.cais.rnp.br --send-key 85F12A95
+
+# Revogando a assinatura
+$ gpg --refresh-keys --keyserver keyserver.cais.rnp.br
+$ gpg --default-key 622D0665 --edit-key 85F12A95
+$ gpg> revsig
+$ gpg> save
+$ gpg --keyserver keyserver.cais.rnp.br --send-key 85F12A95
+
+\end{lstlisting}
+
+\section*{3) Comandos do GPG}
+
+Os 10 comandos escolhidos estão abaixo:
+
+\begin{lstlisting}
+# Lista, com algumas informacoes, todas as chaves publicas do chaveiro ou apenas as chaves passadas como argumento.
+$ gpg --list-keys
+
+# Lista, com algumas informacoes, todas as chaves privadas do chaveiro ou apenas as chaves passadas como argumento.
+$ gpg --list-secret-keys
+
+# Importa as chaves informadas (<KEYID1>, <KEYID2>, ..., <KEYIDN>) do servidor de chaves keyserver.cais.rnp.br para o chaveiro local.
+$ gpg --keyserver  keyserver.cais.rnp.br --recv-keys <KEYID1> <KEYID2>
+
+# Envia as chaves informadas (<KEYID1>, <KEYID2>, ..., <KEYIDN>) do chaveiro local para o servidor de chaves keyserver.cais.rnp.br.
+$ gpg --keyserver  keyserver.cais.rnp.br --send-keys <KEYID1> <KEYID2>
+
+# Deleta as chaves publicas informadas do chaveiro local.
+$ gpg --delete-keys <KEYID1> <KEYID2>
+
+# Deleta as chaves privadas informadas do chaveiro local.
+$ gpg --delete-secret-keys <KEYID1> <KEYID2>
+
+# Cria um certificado de revogacao para a chave publica informada.
+$ gpg --gen-revoke 8316C680
+
+# Importa / funde chaves (aplicavel tambem aos certificados de revogacao).
+$ gpg --import revoke.asc
+
+# Gera uma nova chave criptografica
+$ gpg --gen-key
+
+# Atualiza o chaveiro local a partir do servidor de chaves keyserver.cais.rnp.br.
+$ gpg --refresh-keys --keyserver keyserver.cais.rnp.br
+\end{lstlisting}
+
+\section*{4) Opções aos comandos do GPG}
+
+\begin{lstlisting}
+# Imprime na tela a chave publica do e-mail fnpaladini@gmail.com com armadura ascii (base64).
+$ gpg --armor --export fnpaladini@gmail.com
+
+# Gera o arquivo meu-arquivo.gpg que esta encriptado com a chave publica do recipiente informado.
+$ gpg --recipient rodrigo_duarte.l@hotmail.com --encrypt meu-arquivo.txt
+
+# Gera o arquivo meu-arquivo.asc (utilizando armadura ascii, base64) que esta encriptado com a chave publica do recipiente informado.
+$ gpg --recipient rodrigo_duarte.l@hotmail.com --armor --encrypt meu-arquivo.txt
+
+# Exporta a chave pública do usuario informado para o arquivo pubkey.txt que tem conteudo codificado com armadura ascii - base 64.
+$ gpg --armor --output pubkey.txt --export fnpaladini@gmail.com
+
+# Assina a <KEYID> informada utilizando a chave privada do usuario (no caso, 622D0665).
+gpg -u 622D0665 --sign-key <KEYID>
+
+\end{lstlisting}
+
+\section*{5)  Usando Certicados PGP no Webmail do INE ( ou outro )}
+
+Como não consegui acessar o webmail do INE e o webmail da UFSC (Roundcube) não parece possuir suporte para assinaturas digitais com PGP (pelo menos de acordo com a documentação que encontrei), resolvi fazer de forma mais manual.
+
+\begin{lstlisting}
+$ cat email_lista_seg.txt
+Meu primeiro ""e-mail"" assinado digitalmente p/ o tópico 5 do trabalho individual sobre GPG.
+
+Att,
+Fernando Paladini.
+
+$ gpg -u 622D0665 --clearsign email_lista_seg.txt
+$ cat email_lista_seg.txt.asc
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Meu primeiro ""e-mail"" assinado digitalmente p/ o topico 5 do trabalho individual sobre GPG.
+
+Att,
+Fernando Paladini.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJX3C10AAoJENK3VbRiLQZlp9oP/3gX09RGaOT2kbBU3c1Y8WG3
+Xt74Din7qYzPNC5Wgry3siG/4M+WcdUyMolpNn5V2t5c/NyzdjAXRWsI+MNP/Kbm
+9I89N2lEJZY1qtvIO4tTBkr0CBSroB8fQ6EDQFR9nyyM0OtEhie9e7Yl5GBou2pF
+ZaqzygGqngTiPKl6KIS8Uqv3IRfibvPseYfaQIj8JLjXmgiBZWmtxTrs1YP7T7NX
+PWz8JMl7kGrK1AJx5lpRtLq996C51uYwysTXEadV8aZlsV/6ZTI+pvEjFV/lRc84
+X9VkyTYmdKNrAjKV2c+I51bYwc+aIJP4uC0wh8ur0lsEtku3Zs/9eXpHlE+wu8G+
+Kzgr1F1By24jq9RNMoDwTI0YbPu/yeobdAlcyCCSdDxORW6klZLpU6NDuZ3my5fI
+o30Wwt0ar48t4aJDaxS6JTFxto7F8bD9H78EfHbfDCSBeMqpO73ICHBI+h2zVe+7
+XED52DITcHigG5ZlroXhGG4ErMo6rFrfJJjIbk4R2gCvrK2D7CRHJqEfV73qtXzJ
+Dtl5mUauBPJYAzUeG7PCP1hfnAuC95Dml3rhnaYx6zWLfd+ujviYuSP9QmfhZzs7
+zCxWKcsbmfwUHanRb/syC8WONYJmu7MkdU60rwLKf7Wqp+5DT1JDhkZ23Bfiqty8
+i7IxxrKFckPiUNckztvj
+=SKrk
+-----END PGP SIGNATURE-----
+
+\end{lstlisting}
+
+Não compreendi muito bem para onde era para enviar o e-mail, portanto copiei o conteúdo assinado digitalmente e enviei para o fórum da disciplina no CAGR. Não sei qual o endereço da lista de e-mails da disciplina, se ela de fato possui uma. Está disponível em: http://forum.cagr.ufsc.br/listarMensagens.jsf?topicoId=2779920
+
+\section*{6) Comando --edit-key}
+\begin{lstlisting}
+# Permite checar a sua assinatura no certificado passado como parametro.
+check
+
+# Faz uma assinatura nao revogavel no certificado passado como parametro, ou seja, uma assinatura que nao podera ser removida em algum momento no futuro
+nrsign
+
+# Adiciona uma foto para o certificado passado como parametro. Precisa ser JPEG e ter pouca resolucao, alem de baixa qualidade, para nao deixar o certificado muito pesado.
+addphoto
+
+# Permite modificar a data de expiracao do certificado passado como parametro.
+expire
+
+# Alterna a visualizacao entre chave publica e chave privada.
+toggle
+
+# Revoga a assinatura sobre o certificado passado como parametro.
+revsig
+
+# Mostra a foto que esta associada / junto com o certificado.
+showphoto
+
+# Permite modificar a senha utilizada para acessar / usar o certificado.
+passwd
+
+# Define o servidor de chaves preferido para o ID de usuario em questao (similar a um valor default, mas caso o servidor de chaves esteja offline, utiliza outros).
+keyserver
+
+# Revoga a chave ou sub-chave em questao
+revkey
+\end{lstlisting}
+
+\section*{7) Perguntas gerais}
+
+\newline \noindent \textbf{7.1) O que é o anel de chaves privadas? Como este está estruturado? Na sua aplicação GPG onde este anel de chaves é armazenado? Quem pode ter acesso a esse porta chaves?}\newline
+Este é o local onde estão todas as suas chaves privadas e no meu caso está localizado em "/home/tulio/.gnupg/secring.gpg". Somente o dono do anel de chaves privadas deve ter acesso a ele, mas o arquivo está encriptado.
+\newline
+\newline \noindent \textbf{7.2) Qual a diferença entre assinar uma chave local e assinar no servidor?}\newline
+Uma chave assinada localmente está disponível apenas para você, no seu chaveiro, enquanto que uma chave assinada no servidor está disponível para todos. Quanto mais assinaturas de chaves estiverem disponíveis nos servidores de chaves, maior é a rede de confiança de que vai existir para a rede como um todo, o que é algo extremamente positivo.
+\newline
+\newline \noindent \textbf{7.3) O que é e como é organizado o banco de dados de confiabilidade?}\newline
+O banco de dados de confiabilidade é um banco de dados que possui a confiança que você tem em cada certificado. Por exemplo, se você conhece pessoalmente uma pessoa e confia muito nela, você pode assinar o seu certificado de tal forma a garantir mais confiança sua a ela. O bnaco de dados de confiabilidade armazena todas essas relações de forma local.
+\newline
+\newline \noindent \textbf{7.4) O que são e para que servem as sub-chaves?}\newline
+As sub-chaves são chaves criptográficas que permitem a existência de uma chave-mestre, estando também limitadas / ligadas a ela. Uma sub-chave pode ser usada para encriptação e também para assinatura e é muito interessante pois através de uma chave-mestre é possível criar novas sub-chaves ou revogar as já existentes, o que é muito interessante por motivos de segurança e também praticidade.
+\newline
+\newline \noindent \textbf{7.5) Coloque sua foto ( ou uma figura qualquer ) que represente você em seu certificado GPG.}\newline
+Para colocar uma foto no certificado basta rodar os seguintes comandos:
+\begin{lstlisting}
+$ gpg --edit-key 622D0665
+addphoto
+/home/tulio/Pictures/img.jpg
+save
+gpg --keyserver keyserver.cais.rnp.br --send-keys 622D0665
+\end{lstlisting}
+
+O certificado pode ser encontrado no servidor de chaves e está com uma imagem jpg extremamente leve.
+\newline
+\newline \noindent \textbf{7.6) O que é preciso para criar e manter um servidor de chaves GPG, sincronizado com os demais servidores existentes?}\newline
+Para criar seu próprio servidor de chaves GPG que é sincronizado com os demais servidores GPG é necessário a utilização de um servidor SKS. SKS é um acrônimo para Synchronizing Key Server e é um protocolo que foi criado justamente este fim.
+\newline
+\newline \noindent \textbf{7.7) De um exemplo de como tornar sigiloso um arquivo usando o GPG. Envie esse arquivo para um colega e que enviar para você outro arquivo cifrado. Você deve decifrar e recuperar o conteúdo original.}\newline
+Para fazer isso você precisa possuir a chave pública do colega e ele também deve possuir a sua. Suponha que queremos encriptar o arquivo "meu-arquivo.txt" com a chave pública do Rodrigo Duarte. Para tal, podemos fazer isso:
+
+\begin{lstlisting}
+$ gpg -u 622D0665 --recipient rodrigo_duarte.l@hotmail.com --encrypt meu-arquivo.txt --output meu-arquivo.gpg
+
+\end{lstlisting}
+
+Quando o Rodrigo receber o arquivo encriptado, basta ele usar a sua chave privada para descriptografar o arquivo:
+
+\begin{lstlisting}
+$ gpg --output meu-arquivo.txt --decrypt meu-arquivo.gpg
+\end{lstlisting}
+
+Depois de inserir a senha da chave privada dele, ele terá exatamente o mesmo arquivo que foi enviado, mas de forma completamente segura.
+\newline
+\newline \noindent \textbf{7.8) De um exemplo de como assinar um arquivo ( assinatura anexada e outro com assinatura separada ), usando o GPG. Envie uma mensagem assinada para um colega. Esse colega deve enviar para você outra mensagem assinada. Verifique se a assinatura está correta.}\newline
+Para assinar um arquivo ("meu-arquivo.txt" e obter um arquivo com a assinatura separada ("meu-arquivo.sig") basta executar:
+
+\begin{lstlisting}
+$ gpg --output meu-arquivo.sig --detach-sig meu-arquivo.txt
+\end{lstlisting}
+
+Para verificar a assinatura de um arquivo assinado é necessário o comando "--verify" do GPG, passando como argumento tanto a assinatura quanto o arquivo:
+\begin{lstlisting}
+$ gpg --verify meu-arquivo.sig meu-arquivo.txt
+\end{lstlisting}
+
+Para assinar um arquivo utilizando uma assinatura anexada ao mesmo tempo que criptografa o documento basta rodar o seguinte comando:
+\begin{lstlisting}
+$ gpg --output meu-arquivo.sig --sign meu-arquivo.txt
+\end{lstlisting}
+
+Então, para descriptografar o documento ao mesmo tempo que verifica a assinatura basta rodar:
+\begin{lstlisting}
+$ gpg --output meu-arquivo.txt --decrypt meu-arquivo.sig
+\end{lstlisting}
+
+\end{document}
